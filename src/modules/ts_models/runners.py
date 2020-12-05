@@ -1,5 +1,4 @@
 import pickle
-import catboost
 from sklearn.pipeline import Pipeline
 
 from src.modules.ts_models.preprocess import EventsFeatureImputer, DateFeatureAdder
