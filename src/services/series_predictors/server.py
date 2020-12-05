@@ -1,10 +1,36 @@
 import os
-from src.modules.db_helpers.config import CurrencyTables
+import time
+from datetime import timedelta, datetime
+
+import schedule
+
 from src.modules.ts_models.runners import FrozenModel
+from src.modules.db_helpers.config import CurrencyTables
+from src.modules.db_helpers.helper import get_time_from_last_row, get_currency_data, upload_prediction_data
+from src.services.series_predictors.utils import generate_future_dates
 
 
 def poll():
-    print(currencies_pairs)
+    for currency in currencies_pairs.keys():
+        currency_data = currencies_pairs[currency]
+        model = models[currency]
+
+        pred_time = get_time_from_last_row(currency_data['prediction'])
+        orig_time = get_time_from_last_row(currency_data['original'])
+
+        if pred_time - orig_time < timedelta(hours=12):
+            # data = get_currency_data(currency_data['original'], days_step=2)
+            # data = data.set_index('unix_timestamp').iloc[-125:, :]
+            # X = data.drop(data.columns, axis=1)
+            # y = data['close'].to_list()
+
+            # model.fit(X, y)
+
+            future_dates = generate_future_dates(orig_time, 20)
+            future_dates['close'] = model.predict(future_dates)
+            start = datetime.now()
+            upload_prediction_data(currency_data['prediction'], future_dates)
+            print(datetime.now() - start)
 
 
 if __name__ == '__main__':
@@ -30,6 +56,9 @@ if __name__ == '__main__':
     for model_name in currencies_pairs.keys():
         models[model_name] = FrozenModel(os.path.join('../../../models', f'{model_name}.ctb'))
 
-    print(models)
-
     poll()
+
+    # schedule.every(10).second.do(poll)
+    # while True:
+    #     schedule.run_pending()
+    #     time.sleep(1)

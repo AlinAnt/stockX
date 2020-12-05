@@ -33,18 +33,18 @@ def get_currency_data(currency_table, days_step=None, hours_step=None, minutes_s
         raise Exception('Steps are not used.')
 
     if days_step:
-        time_step = 60 * 24 * days_step
+        time_step = 60**2 * 24 * days_step
     if hours_step:
-        time_step = 60 * hours_step
+        time_step = 60**2 * hours_step
     if minutes_step:
-        time_step = minutes_step
+        time_step = 60 * minutes_step
 
     table_name = currency_table.value
 
     cursor = currency_db.cursor()
     cursor.execute(
         f'SELECT * FROM "{table_name}" WHERE '
-        f'MOD("unix_timestamp", {time_step}) = 0;'
+        f'MOD("unix_timestamp", {time_step}) = 0 ORDER BY "unix_timestamp";'
     )
     raw_data = cursor.fetchall()
 
@@ -74,6 +74,11 @@ def upload_prediction_data(currency_table, data):
         f'DELETE FROM "{table_name}" WHERE true;'
     )
 
-    cursor.execute(f'INSERT INTO {table_name} (model_name) VALUES (%s)', values)
+    time_values = [v.timestamp() for v in data.index]
+    rate_values = data['close'].tolist()
+    zipped = list(zip(time_values, rate_values))
+
+    cursor.executemany(f'INSERT INTO "{table_name}" ("unix_timestamp", "value")'
+                       f' VALUES (%s, %s)', zipped)
 
     currency_db.commit()
