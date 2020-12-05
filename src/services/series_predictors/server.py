@@ -17,6 +17,7 @@ def poll():
 
         pred_time = get_time_from_last_row(currency_data['prediction'])
         orig_time = get_time_from_last_row(currency_data['original'])
+        print(pred_time)
 
         if pred_time - orig_time < timedelta(hours=12):
             # data = get_currency_data(currency_data['original'], days_step=2)
@@ -58,7 +59,7 @@ if __name__ == '__main__':
 
     poll()
 
-    # schedule.every(10).second.do(poll)
-    # while True:
-    #     schedule.run_pending()
-    #     time.sleep(1)
+    schedule.every(5).minutes.do(poll)
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
