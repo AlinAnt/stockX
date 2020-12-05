@@ -1,6 +1,5 @@
 import psycopg2
 
-from src.modules.db_helpers.config import CurrencyTables
 from src.modules.db_helpers.utils import currency_data_to_df
 
 currency_db = psycopg2.connect(

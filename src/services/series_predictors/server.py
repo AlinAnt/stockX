@@ -28,7 +28,7 @@ if __name__ == '__main__':
 
     # load models
     for model_name in currencies_pairs.keys():
-        models[models] = FrozenModel(os.path.join('../../../models', f'{model_name}.ctb'))
+        models[model_name] = FrozenModel(os.path.join('../../../models', f'{model_name}.ctb'))
 
     print(models)
 
