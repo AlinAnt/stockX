@@ -6,8 +6,8 @@ import schedule
 
 from src.modules.ts_models.runners import FrozenModel
 from src.modules.db_helpers.config import CurrencyTables
-from src.modules.db_helpers.helper import get_time_from_last_row, get_currency_data, upload_prediction_data
 from src.services.series_predictors.utils import generate_future_dates
+from src.modules.db_helpers.helper import get_time_for_row, get_currency_data, upload_prediction_data
 
 
 def poll():
@@ -15,11 +15,12 @@ def poll():
         currency_data = currencies_pairs[currency]
         model = models[currency]
 
-        pred_time = get_time_from_last_row(currency_data['prediction'])
-        orig_time = get_time_from_last_row(currency_data['original'])
+        pred_time = get_time_for_row(currency_data['prediction'], 'begin')
+        orig_time = get_time_for_row(currency_data['original'])
         print(pred_time)
+        print(orig_time)
 
-        if pred_time - orig_time < timedelta(hours=12):
+        if orig_time - pred_time > timedelta(minutes=30):
             # data = get_currency_data(currency_data['original'], days_step=2)
             # data = data.set_index('unix_timestamp').iloc[-125:, :]
             # X = data.drop(data.columns, axis=1)
@@ -27,11 +28,11 @@ def poll():
 
             # model.fit(X, y)
 
-            future_dates = generate_future_dates(orig_time, 20)
+            future_dates = generate_future_dates(orig_time, 40)
             future_dates['close'] = model.predict(future_dates)
             start = datetime.now()
             upload_prediction_data(currency_data['prediction'], future_dates)
-            print(datetime.now() - start)
+            print('Uploading takes: ', datetime.now() - start)
 
 
 if __name__ == '__main__':
@@ -59,7 +60,7 @@ if __name__ == '__main__':
 
     poll()
 
-    schedule.every(5).minutes.do(poll)
+    schedule.every(10).minutes.do(poll)
     while True:
         schedule.run_pending()
         time.sleep(1)

@@ -1,7 +1,6 @@
 import psycopg2
 from datetime import datetime
 
-from src.modules.db_helpers.config import CurrencyTables
 from src.modules.db_helpers.utils import currency_data_to_df
 
 currency_db = psycopg2.connect(
@@ -33,9 +32,9 @@ def get_currency_data(currency_table, days_step=None, hours_step=None, minutes_s
         raise Exception('Steps are not used.')
 
     if days_step:
-        time_step = 60**2 * 24 * days_step
+        time_step = 60 ** 2 * 24 * days_step
     if hours_step:
-        time_step = 60**2 * hours_step
+        time_step = 60 ** 2 * hours_step
     if minutes_step:
         time_step = 60 * minutes_step
 
@@ -51,14 +50,22 @@ def get_currency_data(currency_table, days_step=None, hours_step=None, minutes_s
     return currency_data_to_df(raw_data, get_columns_name(currency_table))
 
 
-def get_time_from_last_row(currency_table):
+def get_time_for_row(currency_table, position='end'):
     """If not exist, return 1970.**"""
     cursor = currency_db.cursor()
     table_name = currency_table.value
-    cursor.execute(
-        f'SELECT "unix_timestamp" FROM "{table_name}"'
-        f' ORDER BY "unix_timestamp" DESC LIMIT 1;'
-    )
+
+    if position == 'end':
+        cursor.execute(
+            f'SELECT "unix_timestamp" FROM "{table_name}"'
+            f' ORDER BY "unix_timestamp" DESC LIMIT 1;'
+        )
+    else:
+        cursor.execute(
+            f'SELECT "unix_timestamp" FROM "{table_name}"'
+            f' ORDER BY "unix_timestamp" ASC LIMIT 1;'
+        )
+
     res = cursor.fetchone()
     if res:
         return datetime.fromtimestamp(res[0])
