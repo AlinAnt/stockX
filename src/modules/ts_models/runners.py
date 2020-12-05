@@ -6,14 +6,21 @@ from src.modules.ts_models.preprocess import EventsFeatureImputer, DateFeatureAd
 
 class FrozenModel:
     def __init__(self, frozen_model_path):
-        with open(frozen_model_path, 'rb') as f:
-            model = pickle.load(f)
+        self.model_path = frozen_model_path
+        with open(self.model_path, 'rb') as f:
+            self.model = pickle.load(f)
 
         self.pipeline = Pipeline([
             ('holidays', EventsFeatureImputer()),
             ('date_feature_gen', DateFeatureAdder()),
-            ('model', model)
         ])
 
+    def fit(self, X, y):
+        X_transf = self.pipeline.transform(X)
+        self.model.fit(X_transf, y)
+        with open(self.model_path, 'wb') as f:
+            pickle.dump(self.model, f)
+
     def predict(self, X):
-        return self.pipeline.predict(X)
+        X_transf = self.pipeline.transform(X)
+        return self.model.predict(X_transf)
