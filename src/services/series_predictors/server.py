@@ -7,7 +7,8 @@ import schedule
 from src.modules.ts_models.runners import FrozenModel
 from src.modules.db_helpers.config import CurrencyTables
 from src.services.series_predictors.utils import generate_future_dates, get_last_model_update
-from src.modules.db_helpers.helper import get_time_for_row, get_currency_data, upload_prediction_data
+from src.modules.db_helpers.helper import get_border_time, get_currency_data, upload_prediction_data, \
+    get_currency_tables_pairs
 
 
 def poll():
@@ -15,8 +16,8 @@ def poll():
         currency_data = currencies_pairs[currency]
         model = models[currency]
 
-        pred_time = get_time_for_row(currency_data['prediction'], 'begin')
-        orig_time = get_time_for_row(currency_data['historical'])
+        pred_time = get_border_time(currency_data['prediction'], 'begin')
+        orig_time = get_border_time(currency_data['historical'])
         print('First predict time: ', pred_time)
         print('Last historical time: ', orig_time)
 
@@ -39,26 +40,12 @@ def poll():
 if __name__ == '__main__':
     global currencies_pairs
     global models
-    currencies_pairs = {}
+    currencies_pairs = get_currency_tables_pairs()
     models = {}
-
-    # find pairs for currencies
-    for table in CurrencyTables:
-        name = table.name.split('_')
-        base_name = name[0]
-
-        if base_name not in currencies_pairs:
-            currencies_pairs[base_name] = {}
-
-        if len(name) == 1:
-            currencies_pairs[base_name]['historical'] = table
-        else:
-            currencies_pairs[base_name]['prediction'] = table
 
     # load models
     for model_name in currencies_pairs.keys():
         models[model_name] = FrozenModel(os.path.join('../../../models', f'{model_name}.ctb'))
-
 
     schedule.every(10).minutes.do(poll)
     while True:

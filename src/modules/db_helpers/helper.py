@@ -3,8 +3,8 @@ from io import StringIO
 
 import psycopg2
 
+from src.modules.db_helpers.config import CurrencyTables
 from src.modules.db_helpers.utils import currency_data_to_df
-
 
 COLUMNS = [
     'open',
@@ -16,13 +16,12 @@ COLUMNS = [
     'unix_timestamp'
 ]
 
-
 credentials = {
-   'host': '34.91.54.163',
-   'port': '5432',
-   'user': 'stockx-team',
-   'password': 'AAFj2RKy9PxPadMEEBGv',
-   'database': 'cryptodata'
+    'host': '34.91.54.163',
+    'port': '5432',
+    'user': 'stockx-team',
+    'password': 'AAFj2RKy9PxPadMEEBGv',
+    'database': 'cryptodata'
 }
 
 currency_db = psycopg2.connect(**credentials)
@@ -68,7 +67,7 @@ def get_currency_data(currency_table, days_step=None, hours_step=None, minutes_s
     return currency_data_to_df(raw_data, get_columns_name(currency_table))
 
 
-def get_time_for_row(currency_table, position='end'):
+def get_border_time(currency_table, position='end'):
     """If not exist, return 1970.**"""
     cursor = currency_db.cursor()
     table_name = currency_table.value
@@ -89,6 +88,23 @@ def get_time_for_row(currency_table, position='end'):
         return datetime.fromtimestamp(res[0])
     else:
         return datetime.fromtimestamp(0)
+
+
+def get_border_rate(currency_table, is_prediction):
+    cursor = currency_db.cursor()
+    table_name = currency_table.value
+    column = 'value' if is_prediction else 'close'
+
+    cursor.execute(
+        f'SELECT "{column}" FROM "{table_name}" '
+        f'ORDER BY "unix_timestamp" DESC LIMIT 1'
+    )
+
+    timestamp = cursor.fetchone()
+    if timestamp:
+        return timestamp[0]
+    else:
+        return 0
 
 
 def upload_prediction_data(currency_table, data):
@@ -120,6 +136,17 @@ def get_last_timestamp(currency_pair):
             return 0
 
 
+def get_last_rate(currency_pair):
+    with currency_db.cursor() as cursor:
+        cursor.execute(f'SELECT MAX(unix_timestamp) FROM public."{currency_pair}"')
+
+        timestamp = next(cursor)[0]
+        if timestamp:
+            return timestamp
+        else:
+            return 0
+
+
 def load_candlestick_data(df, currency_pair):
     with currency_db.cursor() as cursor:
         cursor.copy_from(
@@ -134,3 +161,20 @@ def load_candlestick_data(df, currency_pair):
             f'"{currency_pair}"',
             columns=COLUMNS
         )
+
+
+def get_currency_tables_pairs():
+    currencies_pairs = {}
+    for table in CurrencyTables:
+        name = table.name.split('_')
+        base_name = name[0]
+
+        if base_name not in currencies_pairs:
+            currencies_pairs[base_name] = {}
+
+        if len(name) == 1:
+            currencies_pairs[base_name]['historical'] = table
+        else:
+            currencies_pairs[base_name]['prediction'] = table
+
+    return currencies_pairs
