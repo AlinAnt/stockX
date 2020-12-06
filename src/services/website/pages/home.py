@@ -74,7 +74,7 @@ def generate_table():
 def generate_metric_list_header():
     return generate_metric_row(
         'Валюта', 'Изменения за день',
-        'Текущий курс($)', 'Курс($) через 40 дней', 'Тыц'
+        'Текущий курс($)', 'Курс($) через 40 дней', ''
     )
 
 
