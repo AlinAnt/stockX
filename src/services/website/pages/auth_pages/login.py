@@ -77,7 +77,7 @@ def layout():
      Output('login-alert', 'children')],
     [Input('login-button', 'n_clicks')],
     [State('login-email', 'value'),
-     State('login-password', 'value')from server import app]
+     State('login-password', 'value')]
 )
 def login_success(n_clicks, email, password):
     '''
@@ -88,10 +88,8 @@ def login_success(n_clicks, email, password):
         if user:
             if check_password_hash(user.password, password):
                 login_user(user)
-                if(current_user.role == 'admin'):
-                    return '/admin'
-                else:
-                    return '/home',success_alert
+                
+                return '/home',success_alert
             else:
                 return no_update,failure_password_alert
         else:
