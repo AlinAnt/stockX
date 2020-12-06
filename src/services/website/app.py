@@ -7,7 +7,13 @@ from flask import redirect
 from flask_login import current_user, logout_user
 
 # app pages
-from pages import case, home, page1, profile
+from pages import (
+    home,
+    profile,
+    currency_page,
+    case,
+)
+
 # app authentication 
 from pages.auth_pages import change_password, forgot_password, login, register
 from server import app, server
@@ -19,7 +25,7 @@ header = dbc.Navbar(
             dbc.Nav(
                 [
                     dbc.NavItem(dbc.NavLink("Home", href="/home")),
-                    dbc.NavItem(dbc.NavLink("Page1", href="/page1")),
+                    dbc.NavItem(dbc.NavLink("BITCOIN", href="/currencies/BTC")),
                     dbc.NavItem(dbc.NavLink("Your cases", href="/case")),
                     dbc.NavItem(dbc.NavLink(id='user-name',href='/profile')),
                     dbc.NavItem(dbc.NavLink('Login',id='user-action',href='Login'))
@@ -81,9 +87,9 @@ def router(pathname):
     elif pathname == '/profile' or pathname=='/profile':
         if current_user.is_authenticated:
             return profile.layout()
-    elif pathname == '/page1' or pathname=='/page1':
+    elif '/currencies' in pathname:
         if current_user.is_authenticated:
-            return page1.layout()
+            return currency_page.layout(pathname.split(r'/')[-1])
     elif pathname == '/case' or pathname=='/case':
         if current_user.is_authenticated:
             return case.layout()
