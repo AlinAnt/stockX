@@ -4,7 +4,10 @@ import requests
 import numpy as np
 import pandas as pd
 
-from src.modules.db_helpers.helper import load_candlestick_data, get_last_timestamp
+from src.modules.db_helpers.helper import (
+    load_candlestick_data,
+    get_last_timestamp
+)
 
 API = 'https://api.binance.com/api/v3/'
 
@@ -28,7 +31,7 @@ def _get_batch(currency_pair, start_time=0, interval='1m', limit=1000):
     response = requests.get(
         f'{API}klines',
         {
-            'symbol': ''.join(currency_pair),
+            'symbol': currency_pair,
             'interval': interval,
             'startTime': start_time,
             'limit': limit
@@ -58,8 +61,6 @@ def _get_binace_data(currency_pair, start_time=0, interval='1m', limit=1000):
         last_timestamp = batch['open_time'].max()
 
         batches.append(batch)
-
-        print(last_timestamp)
 
         time.sleep(0.1)
 
