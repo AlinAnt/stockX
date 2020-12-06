@@ -1,13 +1,12 @@
 import sys
 from datetime import timedelta
 
-import dash
+from dash.dependencies import Output, Input
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objs as go
 
-from src.services.website.server import app
 
 sys.path.append("./../../../../stockx-release")
 from src.modules.db_helpers.helper import get_currency_data
@@ -19,20 +18,30 @@ login_alert = dbc.Alert(
 )
 
 
-def get_history_data():
-    df = get_currency_data(CurrencyTables.BTC, days_step=1)
+def get_history_data(currency_name):
+    for table in CurrencyTables:
+        print(currency_name)
+        if table.name == currency_name:
+            currency = table
+            break
+
+    df = get_currency_data(currency, days_step=1)
     last_date = df['unix_timestamp'][len(df) - 1]
     week_interval = last_date - timedelta(weeks=30)
     week_df = df[df['unix_timestamp'] > week_interval]
     return week_df
 
 
-def get_future_data():
-    df = get_currency_data(CurrencyTables.BTC_PRED, hours_step=1)
+def get_future_data(currency_name):
+    for table in CurrencyTables:
+        if table.name == currency_name + '_PRED':
+            currency = table
+            break
+    df = get_currency_data(currency, hours_step=1)
     return df
 
 
-def create_time_series(historical_data, future_data):
+def create_time_series(historical_data, future_data, currency_name):
     historical_time = historical_data['unix_timestamp']
     historical_values = historical_data['close']
 
@@ -55,7 +64,7 @@ def create_time_series(historical_data, future_data):
         )
     ]
     layout = dict(
-        title='Изменения курса Bitcoin',
+        title=f'Изменения курса {currency_name}',
         xaxis=dict(
             rangeselector=dict(
                 buttons=list([
@@ -159,27 +168,28 @@ def create_bbox_plots(historical_data):
     return go.Figure(data, layout=layout)
 
 
-@app.callback(
-    dash.dependencies.Output('slider-output-container', 'children'),
-    [dash.dependencies.Input('currency-slider-id', 'value')])
-def update_output(value):
-    return 'You have selected "{}"'.format(value)
+# @app.callback(
+#     Output('slider-output-container', 'children'),
+#     [Input('currency-slider-id', 'value')])
+# def update_output(value):
+#     return 'You have selected "{}"'.format(value)
 
 
-def layout():
+def layout(currency_name):
     # if current_user.is_authenticated:
-    hist_data = get_history_data()
-    future_data = get_future_data()
+    hist_data = get_history_data(currency_name)
+    future_data = get_future_data(currency_name)
 
     return html.Div([
         dbc.Row(
             dbc.Col([
                 html.Div(id='slider-output-container'),
-                html.H4("Bitcoin"),
+                html.H4(f"{currency_name}"),
                 dcc.Graph(
                     id='prediction-plot',
                     figure=create_time_series(
-                        hist_data, future_data
+                        hist_data, future_data,
+                        currency_name
                     )
                 )
             ])
