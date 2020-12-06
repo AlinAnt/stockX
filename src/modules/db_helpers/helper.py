@@ -1,14 +1,32 @@
-import psycopg2
 from datetime import datetime
+from io import StringIO
+
+import psycopg2
 
 from src.modules.db_helpers.utils import currency_data_to_df
 
-currency_db = psycopg2.connect(
-    dbname='cryptodata',
-    user='stockx-team',
-    password='AAFj2RKy9PxPadMEEBGv',
-    host='34.91.54.163',
-)
+
+COLUMNS = [
+    'open',
+    'high',
+    'low',
+    'close',
+    'volume',
+    'number_of_trades',
+    'unix_timestamp'
+]
+
+
+credentials = {
+   'host': '34.91.54.163',
+   'port': '5432',
+   'user': 'stockx-team',
+   'password': 'AAFj2RKy9PxPadMEEBGv',
+   'database': 'cryptodata'
+}
+
+currency_db = psycopg2.connect(**credentials)
+currency_db.autocommit = True
 
 
 def get_columns_name(currency_table):
@@ -89,3 +107,30 @@ def upload_prediction_data(currency_table, data):
                        f' VALUES (%s, %s)', zipped)
 
     currency_db.commit()
+
+
+def get_last_timestamp(currency_pair):
+    with currency_db.cursor() as cursor:
+        cursor.execute(f'SELECT MAX(unix_timestamp) FROM public."{currency_pair}"')
+
+        timestamp = next(cursor)[0]
+        if timestamp:
+            return timestamp
+        else:
+            return 0
+
+
+def load_candlestick_data(df, currency_pair):
+    with currency_db.cursor() as cursor:
+        cursor.copy_from(
+            StringIO(
+                df.to_csv(
+                    sep='\t',
+                    header=False,
+                    index=False,
+                    columns=COLUMNS
+                )
+            ),
+            f'"{currency_pair}"',
+            columns=COLUMNS
+        )
