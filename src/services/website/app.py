@@ -1,4 +1,6 @@
 # index page
+import random
+
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
@@ -18,6 +20,8 @@ from pages import (
 from pages.auth_pages import change_password, forgot_password, login, register
 from server import app, server
 
+from src.modules.db_helpers.helper import get_currency_tables_pairs
+
 header = dbc.Navbar(
     dbc.Container(
         [
@@ -25,7 +29,7 @@ header = dbc.Navbar(
             dbc.Nav(
                 [
                     dbc.NavItem(dbc.NavLink("Home", href="/home")),
-                    dbc.NavItem(dbc.NavLink("BITCOIN", href="/currencies/BTC")),
+                    dbc.NavItem(dbc.NavLink("Random coin", href="/random")),
                     dbc.NavItem(dbc.NavLink("Your cases", href="/case")),
                     dbc.NavItem(dbc.NavLink(id='user-name',href='/profile')),
                     dbc.NavItem(dbc.NavLink('Login',id='user-action',href='Login'))
@@ -93,6 +97,15 @@ def router(pathname):
     elif pathname == '/case' or pathname=='/case':
         if current_user.is_authenticated:
             return case.layout()
+    elif pathname == '/random':
+        if current_user.is_authenticated:
+            currencies = list(get_currency_tables_pairs().keys())
+            name = random.choice(currencies)
+
+            return dcc.Location(
+                pathname=f"/currencies/{name}",
+                id='currency_redirect'
+            )
 
     # DEFAULT LOGGED IN: /home
     if current_user.is_authenticated:
