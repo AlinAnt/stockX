@@ -36,14 +36,13 @@ def create_time_series(historical_data, future_data):
     future_time = future_data['unix_timestamp']
     future_values = future_data['value']
 
-    fig = go.Figure([
+    data = [
         go.Scatter(
             x=historical_time,
             y=historical_values,
-            name="historical_scatter",
+            name="Historical data",
             line=dict(color="#C70039"),
             textposition="bottom center"
-
         ),
         go.Scatter(
             x=future_time, y=future_values,
@@ -51,19 +50,33 @@ def create_time_series(historical_data, future_data):
             line=dict(color="#FFC300"),
             textposition="bottom center"
         )
-    ])
-    fig.update_xaxes(
-        rangeslider_visible=True,
-    )
-    fig.update_layout(
-        margin=dict(l=0, r=0, t=0, b=0),
-    )
-    fig.update_traces(
-        textposition="bottom center"
+    ]
+    layout = dict(
+        title='Изменения курса Bitcoin',
+        xaxis=dict(
+            rangeselector=dict(
+                buttons=list([
+                    dict(count=1,
+                         label='1m',
+                         step='month',
+                         stepmode='backward'),
+                    dict(count=6,
+                         label='6m',
+                         step='month',
+                         stepmode='backward'),
+                    dict(step='all')
+                ])
+            ),
+            rangeslider={},
+            paper_bgcolor='rgb(233,233,233)',
+            type='date'
+        )
     )
 
-
-    return fig
+    return {
+        'data': data,
+        'layout': layout
+    }
 
 
 def create_indicators(historical_data):
@@ -84,13 +97,10 @@ def create_indicators(historical_data):
 
     year_ago = historical_data['close'][
         historical_data['unix_timestamp'] == last_hist_date - timedelta(days=180)
-    ].iloc[0]
+        ].iloc[0]
 
     hist_values = [day_ago, week_ago, month_ago, year_ago]
-    hist_titles = ['day', 'week', 'month', '6 months']
-    # print(week_ago)
-    # print(last_value)
-    # print(last_value - week_ago)
+    hist_titles = ['day', 'week', '1 m.', '6 m.']
 
     fig = go.Figure()
     for idx, val in enumerate(hist_values):
@@ -101,7 +111,7 @@ def create_indicators(historical_data):
                 'row': idx // 2,
                 'column': idx % 2
             },
-            title=f'Change per {hist_titles[idx]}'
+            title=f'Delta per {hist_titles[idx]}'
         ))
 
     fig.update_layout(
@@ -118,37 +128,31 @@ def create_indicators(historical_data):
     return fig
 
 
-#
-#
-# location = dcc.Location(id='page1-url', refresh=True)
-#
-# today_value = int(history_values[-1])
-# # changes_currency_day
-# yesterday_value = int(df["value"][df['datetime'] == (last_date - timedelta(days=1))])
-# fig_change_day = go.Figure(go.Indicator(
-#     mode="number+delta",
-#     value=today_value,
-#     number={'prefix': "$"},
-#     delta={'position': 'top', 'reference': yesterday_value},
-#     domain={'x': [0, 1], 'y': [0, 1]}
-#
-# ))
-# fig_change_day.update_layout(paper_bgcolor="#d3e3f2")
-#
-# # changes_currency_week
-# week_past_value = int(df["value"][df['datetime'] == (last_date - timedelta(weeks=1))])
-# fig_change_week = go.Figure(go.Indicator(
-#     mode="number+delta",
-#     value=today_value,
-#     number={'prefix': "$"},
-#     delta={'position': 'top', 'reference': week_past_value},
-#     domain={'x': [0, 1], 'y': [0, 1]}
-#
-# ))
-# fig_change_week.update_layout(paper_bgcolor="#d3e3f2")
+def create_bbox_plots(historical_data):
+    data = []
+    last_hist_date = historical_data['unix_timestamp'].iloc[-1]
+    month_delta = timedelta(days=30)
+    names = ['last 1 m.', 'last 2 m.', 'last 3m.']
 
+    for i in range(3):
+        interval_end = last_hist_date - i * month_delta
+        interval_begin = last_hist_date - (i + 1) * month_delta
 
-# fig_change_week.update_traces(title_text="Week", selector={type='indicator'})
+        data.append(go.Box(
+            y=historical_data['close'][
+                (historical_data['unix_timestamp'] < interval_end) &
+                (historical_data['unix_timestamp'] > interval_begin)
+                ],
+            boxpoints='outliers',
+
+            name=names[i]
+        ))
+    layout = {
+        'plot_bgcolor': 'rgba(0,0,0,0)',
+        'showlegend': False
+    }
+    return go.Figure(data, layout=layout)
+
 
 def layout():
     # if current_user.is_authenticated:
@@ -167,12 +171,18 @@ def layout():
                 )
             ])
         ),
-        dbc.Row([
-            dcc.Graph(
-                id='test_indicator',
-                figure=create_indicators(hist_data)
-            ),
-        ]),
-
-
+        html.Div([
+            html.Div([
+                dcc.Graph(
+                    id='box_plots',
+                    figure=create_bbox_plots(hist_data)
+                )
+            ], className="col-sm"),
+            html.Div([
+                dcc.Graph(
+                    id='indicator',
+                    figure=create_indicators(hist_data)
+                )
+            ], className="col-sm")
+        ], className="container row"),
     ])
