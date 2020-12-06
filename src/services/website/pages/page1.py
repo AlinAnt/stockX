@@ -1,10 +1,13 @@
 import sys
 from datetime import timedelta
 
+import dash
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objs as go
+
+from src.services.website.server import app
 
 sys.path.append("./../../../../stockx-release")
 from src.modules.db_helpers.helper import get_currency_data
@@ -67,7 +70,9 @@ def create_time_series(historical_data, future_data):
                     dict(step='all')
                 ])
             ),
-            rangeslider={},
+            rangeslider=dcc.RangeSlider(
+                id='currency-slider-id',
+            ),
             paper_bgcolor='rgb(233,233,233)',
             type='date'
         )
@@ -154,6 +159,13 @@ def create_bbox_plots(historical_data):
     return go.Figure(data, layout=layout)
 
 
+@app.callback(
+    dash.dependencies.Output('slider-output-container', 'children'),
+    [dash.dependencies.Input('currency-slider-id', 'value')])
+def update_output(value):
+    return 'You have selected "{}"'.format(value)
+
+
 def layout():
     # if current_user.is_authenticated:
     hist_data = get_history_data()
@@ -162,6 +174,7 @@ def layout():
     return html.Div([
         dbc.Row(
             dbc.Col([
+                html.Div(id='slider-output-container'),
                 html.H4("Bitcoin"),
                 dcc.Graph(
                     id='prediction-plot',
@@ -184,5 +197,5 @@ def layout():
                     figure=create_indicators(hist_data)
                 )
             ], className="col-sm")
-        ], className="container row"),
+        ], className="container row", id='full_div'),
     ])
