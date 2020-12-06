@@ -1,27 +1,23 @@
 # external imports
-import traceback
-from sqlalchemy import Table, create_engine, MetaData
-from sqlalchemy.sql import select, and_
-from flask_sqlalchemy import SQLAlchemy
-import sqlalchemy
-from werkzeug.security import generate_password_hash
-from flask_login import current_user
-from functools import wraps
-import random
-from mailjet_rest import Client
 import os
+import random
+import traceback
 from datetime import datetime, timedelta
-import shortuuid
+from functools import wraps
+
 import dash_core_components as dcc
 import dash_html_components as html
+#import shortuuid
+import sqlalchemy
+from flask_login import current_user
+from flask_sqlalchemy import SQLAlchemy
+from mailjet_rest import Client
+from sqlalchemy import MetaData, Table, create_engine
+from sqlalchemy.sql import and_, select
+from werkzeug.security import generate_password_hash
 
 # local imports
-from utilities.keys import (
-    MAILJET_API_KEY,
-    MAILJET_API_SECRET,
-    FROM_EMAIL
-)
-
+from utilities.keys import FROM_EMAIL, MAILJET_API_KEY, MAILJET_API_SECRET
 
 Column = sqlalchemy.Column
 String = sqlalchemy.String
@@ -37,7 +33,20 @@ class User(db.Model):
     last = Column(String(100))
     email = Column(String(100), unique=True)
     password = Column(String(100))
+    role = Column(String(30), default="client")
 
+    def is_authenticated(self):
+        return True
+    
+    def is_anonymous(self):
+        return False
+    
+    def get_id(self):
+        return self.id
+
+    # Required for administrative interface
+    def _unicode_(self):
+        return self.username
 
 def user_table():
     return Table("user", User.metadata)

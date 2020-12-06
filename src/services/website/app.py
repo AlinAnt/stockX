@@ -1,29 +1,16 @@
 # index page
+import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
-import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
-
 from flask import redirect
-from server import app, server
-from flask_login import logout_user, current_user
-
+from flask_login import current_user, logout_user
 
 # app pages
-from pages import (
-    home,
-    profile,
-    page1,
-    case,
-)
-
+from pages import case, home, page1, profile
 # app authentication 
-from pages.auth_pages import (
-    login,
-    register,
-    forgot_password,
-    change_password,
-)
+from pages.auth_pages import change_password, forgot_password, login, register
+from server import app, server
 
 header = dbc.Navbar(
     dbc.Container(

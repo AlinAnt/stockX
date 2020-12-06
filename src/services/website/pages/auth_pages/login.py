@@ -16,8 +16,13 @@ success_alert = dbc.Alert(
     color='success',
     dismissable=True
 )
-failure_alert = dbc.Alert(
+failure_login_alert = dbc.Alert(
     'Login unsuccessful. Try again.',
+    color='danger',
+    dismissable=True
+)
+failure_password_alert = dbc.Alert(
+    "Wrong password. Try again.",
     color='danger',
     dismissable=True
 )
@@ -72,7 +77,7 @@ def layout():
      Output('login-alert', 'children')],
     [Input('login-button', 'n_clicks')],
     [State('login-email', 'value'),
-     State('login-password', 'value')]
+     State('login-password', 'value')from server import app]
 )
 def login_success(n_clicks, email, password):
     '''
@@ -83,11 +88,13 @@ def login_success(n_clicks, email, password):
         if user:
             if check_password_hash(user.password, password):
                 login_user(user)
-
-                return '/home',success_alert
+                if(current_user.role == 'admin'):
+                    return '/admin'
+                else:
+                    return '/home',success_alert
             else:
-                return no_update,failure_alert
+                return no_update,failure_password_alert
         else:
-            return no_update,failure_alert
+            return no_update,failure_login_alert
     else:
         return no_update,''

@@ -7,8 +7,7 @@ from dash.dependencies import Output,Input,State
 from dash import no_update
 from flask_login import current_user
 import time
-
-from server import app
+from server import app, User
 
 import pandas as pd
 import plotly.graph_objs as go
@@ -23,7 +22,8 @@ df = pd.read_csv(
 )
 
 def layout():
-    return html.Div(
+    return html.Div([
+        html.H4(current_user.role),
         dash_table.DataTable(
             style_cell={
                 'whiteSpace':'normal',
@@ -35,7 +35,7 @@ def layout():
                 "id": i} for i in df.columns],
                 data=df.to_dict('records'),
         ),
-    )
+    ])
         
 
 

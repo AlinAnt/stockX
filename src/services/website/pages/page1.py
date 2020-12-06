@@ -31,7 +31,7 @@ def update_history_data():
     week_df = df[df['unix_timestamp'] > week_interval]
     history_time = week_df['unix_timestamp']
     history_values = week_df['close']
-    print(df)
+    #print(df)
 
 def update_future_data():
     global future_time, future_values

@@ -25,11 +25,11 @@ create_password_change_table(PasswordChange,engine)
 
 
 # add a test user to the database
-first = 'test'
-last = 'test'
-email = 'test@test.com'
-password = 'test'
-add_user(first,last,password,email,engine)
+#first = 'Sarna'
+#last = 'rss'
+#email = 'Rita@admin.com'
+#password = '12345'
+#add_user(first,last,password,email, engine)
 
 
 # show that the users exists
