@@ -168,6 +168,7 @@ def create_bbox_plots(historical_data):
     return go.Figure(data, layout=layout)
 
 
+
 # @app.callback(
 #     Output('slider-output-container', 'children'),
 #     [Input('currency-slider-id', 'value')])
@@ -209,3 +210,5 @@ def layout(currency_name):
             ], className="col-sm")
         ], className="container row", id='full_div'),
     ])
+
+

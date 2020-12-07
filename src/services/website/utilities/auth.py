@@ -34,6 +34,7 @@ class User(db.Model):
     email = Column(String(100), unique=True)
     password = Column(String(100))
     role = Column(String(30), default="client")
+    case = db.relationship('case', backref='user', uselist=False )
 
     def is_authenticated(self):
         return True
@@ -44,12 +45,33 @@ class User(db.Model):
     def get_id(self):
         return self.id
 
-    # Required for administrative interface
-    def _unicode_(self):
-        return self.username
 
 def user_table():
     return Table("user", User.metadata)
+
+
+class Case(db.Model):
+    id = Column(Integer, primary_key=True)
+    currency = Column(String(30))
+    user_id = Column(Integer, db.ForeignKey('user.id'))
+
+def case_table():
+    return Table('case', Case.metadata)
+
+
+case_currency = db.Table('case_currency',
+    Column('case_id', Integer, db.ForeignKey('case.id')),
+    Column('currency_id', Integer, db.ForeignKey('currency.id'))
+)
+
+
+class Currency(db.Model):
+    id = Column(Integer,  primary_key=True)
+    name = Column(String(30), nullable=False)
+    cases = db.relationship('case', secondary=case_currency, backref='currency')
+
+def currency_table():
+    return Table('currency', Currency.metadata)
 
 
 def add_user(first, last, password, email, engine):
