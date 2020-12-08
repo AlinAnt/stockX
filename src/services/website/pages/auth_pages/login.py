@@ -85,13 +85,18 @@ def login_success(n_clicks, email, password):
     '''
     if n_clicks > 0:
         user = User.query.filter_by(email=email).first()
+        admin = User.query.filter_by(role='admin').first()
         if user:
             if check_password_hash(user.password, password):
-                login_user(user)
-                
-                return '/home',success_alert
+                if user.role == 'admin':
+                    login_user(user)
+                    return '/admin',success_alert
+                else:
+                    login_user(user)
+                    return '/home',success_alert       
             else:
                 return no_update,failure_password_alert
+
         else:
             return no_update,failure_login_alert
     else:

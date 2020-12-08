@@ -34,7 +34,7 @@ class User(db.Model):
     email = Column(String(100), unique=True)
     password = Column(String(100))
     role = Column(String(30), default="client")
-    case = db.relationship('case', backref='user', uselist=False )
+    case = db.relationship('Case', backref='user', uselist=False )
 
     def is_authenticated(self):
         return True
@@ -56,29 +56,32 @@ class Case(db.Model):
     user_id = Column(Integer, db.ForeignKey('user.id'))
 
 def case_table():
-    return Table('case', Case.metadata)
+    return Table('Case', Case.metadata)
 
 
 case_currency = db.Table('case_currency',
-    Column('case_id', Integer, db.ForeignKey('case.id')),
-    Column('currency_id', Integer, db.ForeignKey('currency.id'))
+   Column('case_id', Integer, db.ForeignKey('case.id')),
+   Column('currency_id', Integer, db.ForeignKey('currency.id'))
 )
 
 
 class Currency(db.Model):
-    id = Column(Integer,  primary_key=True)
-    name = Column(String(30), nullable=False)
-    cases = db.relationship('case', secondary=case_currency, backref='currency')
+   id = Column(Integer,  primary_key=True)
+   name = Column(String(30), nullable=False)
+   cases = db.relationship('Case', secondary=case_currency, backref='Currency')
 
 def currency_table():
     return Table('currency', Currency.metadata)
 
 
-def add_user(first, last, password, email, engine):
+def add_user(first, last, password, email, engine, role=None):
     table = user_table()
     hashed_password = generate_password_hash(password, method="sha256")
-
-    values = dict(first=first, last=last, email=email, password=hashed_password)
+    
+    if role:
+        values = dict(first=first, last=last, email=email, password=hashed_password, role=role)
+    else:
+        values = dict(first=first, last=last, email=email, password=hashed_password) 
     statement = table.insert().values(**values)
 
     try:
@@ -89,7 +92,6 @@ def add_user(first, last, password, email, engine):
     except:
         return False
 
-
 def show_users(engine):
     table = user_table()
     statement = select([table.c.first, table.c.last, table.c.email])
@@ -97,10 +99,15 @@ def show_users(engine):
     conn = engine.connect()
     rs = conn.execute(statement)
 
+    one_user, all_users_dict = {}, []
     for row in rs:
-        print(row)
+        for column, value in row.items():
+            one_user = {**one_user, **{column:value}}
+        all_users_dict.append(one_user)
+    #print(all_users_dict)
 
     conn.close()
+    return all_users_dict
 
 def del_user(email, engine):
     table = user_table()

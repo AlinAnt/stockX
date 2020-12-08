@@ -35,11 +35,13 @@ create_currency_table(Currency,engine)
 #case_currency.create(engine)
 
 # add a test user to the database
-#first = 'Sarna'
-#last = 'rss'
-#email = 'Rita@admin.com'
-#password = '12345'
-#add_user(first,last,password,email, engine)
+first = 'Alex'
+last = 'rss'
+email = 'Alex@test.com'
+password = '12345'
+role = 'client'
+
+add_user(first,last,password,email, engine, role)
 
 
 # show that the users exists

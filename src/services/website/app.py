@@ -5,13 +5,14 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 from flask import redirect
 from flask_login import current_user, logout_user
-
+import random
 # app pages
 from pages import (
     home,
     profile,
     currency_page,
     case,
+    admin,
 )
 
 # app authentication 
@@ -25,9 +26,10 @@ header = dbc.Navbar(
             dbc.Nav(
                 [
                     dbc.NavItem(dbc.NavLink("Home", href="/home")),
-                    dbc.NavItem(dbc.NavLink("BITCOIN", href="/currencies/BTC")),
+                    dbc.NavItem(dbc.NavLink("BITCOIN", id="bitcoin_id", href="/currencies/BTC")),
                     dbc.NavItem(dbc.NavLink("Your cases", href="/case")),
                     dbc.NavItem(dbc.NavLink(id='user-name',href='/profile')),
+                    dbc.NavItem(dbc.NavLink("Admin", id='admin_id', href='/admin')),
                     dbc.NavItem(dbc.NavLink('Login',id='user-action',href='Login'))
                 ]
             )
@@ -84,15 +86,21 @@ def router(pathname):
     elif pathname == '/' or pathname=='/home' or pathname=='/home':
         if current_user.is_authenticated:
             return home.layout()
-    elif pathname == '/profile' or pathname=='/profile':
+    elif pathname == '/profile' or pathname =='/profile':
         if current_user.is_authenticated:
             return profile.layout()
     elif '/currencies' in pathname:
         if current_user.is_authenticated:
             return currency_page.layout(pathname.split(r'/')[-1])
-    elif pathname == '/case' or pathname=='/case':
+    elif pathname == '/case' or pathname =='/case':
         if current_user.is_authenticated:
             return case.layout()
+    elif pathname == '/admin' or pathname == '/admin':
+        if current_user.is_authenticated:
+            if current_user.role == 'admin':
+                return admin.layout()
+            else:
+                return home.layout()
 
     # DEFAULT LOGGED IN: /home
     if current_user.is_authenticated:
@@ -114,6 +122,18 @@ def profile_link(content):
     else:
         return ''
 
+@app.callback(
+    Output('admin_id', 'children'),
+    [Input('page-content', 'children')])
+def admin_link(content):
+    '''
+    returns a navbar link to the user profile if the user is authenticated
+    '''
+    if current_user.is_authenticated and current_user.role == 'admin':
+
+        return html.Div("Admin")
+    else:
+        return ''
 
 @app.callback(
     [Output('user-action', 'children'),
@@ -129,4 +149,4 @@ def user_logout(input1):
         return 'Login', '/login'
 
 if __name__ == '__main__':
-    app.run_server(port=8808, debug=True)
+    app.run_server(port=random.randint(8000,9999), debug=True)

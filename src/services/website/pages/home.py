@@ -23,7 +23,7 @@ df = pd.read_csv(
 
 def layout():
     return html.Div([
-        html.H4(current_user.role),
+        html.H4(),
         dash_table.DataTable(
             style_cell={
                 'whiteSpace':'normal',
