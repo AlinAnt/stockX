@@ -8,7 +8,7 @@ from dash import no_update
 from flask_login import current_user
 import time
 from server import app, User
-
+from utilities.auth import Case
 import pandas as pd
 import plotly.graph_objs as go
 

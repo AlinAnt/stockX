@@ -149,4 +149,4 @@ def user_logout(input1):
         return 'Login', '/login'
 
 if __name__ == '__main__':
-    app.run_server(port=random.randint(8000,9999), debug=True)
+    app.run_server(port=8000, debug=True)

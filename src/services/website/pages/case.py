@@ -18,13 +18,17 @@ case_login_alert = dbc.Alert(
     color='danger'
 )
  
-
+def all_currencies(case):
+    res = []
+    for k in case:
+        res.append(k.name)
+    return '\n'.join(res)
 
 def layout():
-    return dbc.Row(html.H4(current_user.first))
+    return dbc.Row(html.H4(all_currencies(current_user.case.currencies)))
 
 @app.callback(
-    Output('case-test','children'),
+    Output('case-trigger','children'),
     [Input('case-test-trigger','children')]
 )
 def case_test_update(trigger):

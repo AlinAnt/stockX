@@ -27,6 +27,9 @@ db = SQLAlchemy()
 Column, String, Integer, DateTime = db.Column, db.String, db.Integer, db.DateTime
 
 
+
+
+
 class User(db.Model):
     id = Column(Integer, primary_key=True)
     first = Column(String(100))
@@ -36,42 +39,34 @@ class User(db.Model):
     role = Column(String(30), default="client")
     case = db.relationship('Case', backref='user', uselist=False )
 
-    def is_authenticated(self):
-        return True
-    
-    def is_anonymous(self):
-        return False
-    
-    def get_id(self):
-        return self.id
-
-
 def user_table():
     return Table("user", User.metadata)
-
-
-class Case(db.Model):
-    id = Column(Integer, primary_key=True)
-    currency = Column(String(30))
-    user_id = Column(Integer, db.ForeignKey('user.id'))
-
-def case_table():
-    return Table('Case', Case.metadata)
-
 
 case_currency = db.Table('case_currency',
    Column('case_id', Integer, db.ForeignKey('case.id')),
    Column('currency_id', Integer, db.ForeignKey('currency.id'))
 )
 
+class Case(db.Model):
+    id = Column(Integer, primary_key=True)
+    name = Column(String(30))
+    user_id = Column(Integer, db.ForeignKey('user.id'))
+    currencies = db.relationship('Currency', secondary=case_currency, back_populates='cases')
+
+def case_table():
+    return Table('case', Case.metadata)
+
+
+
 
 class Currency(db.Model):
    id = Column(Integer,  primary_key=True)
    name = Column(String(30), nullable=False)
-   cases = db.relationship('Case', secondary=case_currency, backref='Currency')
+   cases = db.relationship('Case', secondary=case_currency, back_populates="currencies")
 
 def currency_table():
     return Table('currency', Currency.metadata)
+
 
 
 def add_user(first, last, password, email, engine, role=None):
@@ -83,31 +78,42 @@ def add_user(first, last, password, email, engine, role=None):
     else:
         values = dict(first=first, last=last, email=email, password=hashed_password) 
     statement = table.insert().values(**values)
-
+    #forRole = select([table.c.id]))
+   
+    conn = engine.connect()
     try:
-        conn = engine.connect()
-        conn.execute(statement)
+        result = conn.execute(statement)
+        
+        #rs = conn.execute(forRole)
+    except Exception as e:
+        print(e)
+    else:
+        new_id = result.inserted_primary_key[0]
+        #print(new_id)
+        add_case('your_case', new_id, engine)
         conn.close()
-        return True
-    except:
-        return False
+        return print("User_case_added")
+        
 
 def show_users(engine):
     table = user_table()
     statement = select([table.c.first, table.c.last, table.c.email])
 
     conn = engine.connect()
-    rs = conn.execute(statement)
+    try:
+        rs = conn.execute(statement)
+    except Exception as e:
+        print(e)
+    else:
+        one_user, all_users_dict = {}, []
+        for row in rs:
+            for column, value in row.items():
+                one_user = {**one_user, **{column:value}}
+            all_users_dict.append(one_user)
+        #print(all_users_dict)
 
-    one_user, all_users_dict = {}, []
-    for row in rs:
-        for column, value in row.items():
-            one_user = {**one_user, **{column:value}}
-        all_users_dict.append(one_user)
-    #print(all_users_dict)
-
-    conn.close()
-    return all_users_dict
+        conn.close()
+        return all_users_dict
 
 def del_user(email, engine):
     table = user_table()
@@ -132,6 +138,52 @@ def user_exists(email, engine):
         ret = next(filter(lambda x: x.email == email, resp), False)
     return bool(ret)
 
+
+def add_case(name, user_id, engine):
+    table = case_table()
+
+    values = dict(name=name, user_id=user_id)
+    statement = table.insert().values(**values)
+
+    conn = engine.connect()
+    try: 
+        conn.execute(statement)
+    except Exception as e:
+        print(e)
+    else: 
+        conn.close()
+        return print("Case added")
+
+def add_currency(name, engine):
+    table = currency_table()
+
+    values = dict(name=name)
+    statement = table.insert().values(**values)
+
+    conn = engine.connect()
+    try: 
+        conn.execute(statement)
+    except Exception as e:
+        print(e)
+    else: 
+        conn.close()
+        return print("Currency added")
+
+
+def add_currencyToСase(case_id, currency_id, engine):
+    table = case_currency
+
+    values = dict(case_id=case_id, currency_id=currency_id)
+    statement = table.insert().values(**values)
+
+    conn = engine.connect()
+    try: 
+        conn.execute(statement)
+    except Exception as e:
+        print(e)
+    else: 
+        conn.close()
+        return print("Case and case added")
 
 def change_password(email, password, engine):
     if not user_exists(email, engine):
