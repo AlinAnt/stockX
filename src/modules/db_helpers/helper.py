@@ -136,17 +136,6 @@ def get_last_timestamp(currency_pair):
             return 0
 
 
-def get_last_rate(currency_pair):
-    with currency_db.cursor() as cursor:
-        cursor.execute(f'SELECT MAX(unix_timestamp) FROM public."{currency_pair}"')
-
-        timestamp = next(cursor)[0]
-        if timestamp:
-            return timestamp
-        else:
-            return 0
-
-
 def load_candlestick_data(df, currency_pair):
     with currency_db.cursor() as cursor:
         cursor.copy_from(
