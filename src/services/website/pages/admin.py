@@ -38,7 +38,7 @@ def generate_user_row(col1, col2, col3, col4, header=True):
            html.Td(children=col2),
            html.Td(children=col3),
            #html.Td(children=col4),
-           html.Td(dbc.Button("Удалить", color='danger', id=col4)),
+           html.Td(dbc.Button("Delete", color='danger', id=col4)),
         ])
 
 def generate_table():
@@ -61,7 +61,7 @@ def generate_table():
 
 def generate_user_list_header():
     return generate_user_row(
-      'Имя', 'Фамилия', 'email', 'Хочешь удалить?'
+      'Name', 'Surname', 'Email', 'Do you want to delete?'
     )
 
 def build_main_layout():

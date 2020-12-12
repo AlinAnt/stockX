@@ -74,7 +74,7 @@ def create_time_series(historical_data, future_data, currency_name):
         )
     ]
     layout = dict(
-        title=f'Изменения курса {currency_name}',
+        title=f'Course changes {currency_name}',
         xaxis=dict(
             rangeselector=dict(
                 buttons=list([
@@ -238,7 +238,7 @@ def add_like_currency(n_clicks, className):
         currency_id = show_id_currency(currency_name, engine)
         #print(currency_id)
         if currency_exists_in_case(case_id, currency_id, engine) == True:
-            pass
+            return no_update
         else:
             add_currencyToСase(case_id, currency_id, engine)
     return no_update

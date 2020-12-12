@@ -22,7 +22,7 @@ def poll():
         print('Last historical time: ', orig_time)
 
         if orig_time - pred_time > timedelta(minutes=30):
-            if datetime.now() - get_last_model_update() > timedelta(days=2):
+            if datetime.now() - get_last_model_update(model) > timedelta(days=2):
                 data = get_currency_data(currency_data['historical'], days_step=2)
                 data = data.set_index('unix_timestamp').iloc[-125:, :]
                 X = data.drop(data.columns, axis=1)
@@ -47,7 +47,7 @@ if __name__ == '__main__':
     for model_name in currencies_pairs.keys():
         models[model_name] = FrozenModel(os.path.join('../../../models', f'{model_name}.ctb'))
 
-    schedule.every(10).minutes.do(poll)
+    schedule.every(10).seconds.do(poll)
     while True:
         schedule.run_pending()
         time.sleep(1)

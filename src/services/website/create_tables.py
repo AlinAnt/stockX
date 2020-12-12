@@ -13,7 +13,8 @@ from utilities.auth import (
     add_case,
     add_currency,
     add_currencyToСase,
-    add_currency
+    add_currency,
+    show_case
 )
 
 
@@ -66,5 +67,4 @@ except Exception as e:
 #print(user_exists(email,engine))
 #name='ETH'
 #add_currency(name, engine)
-
 
