@@ -161,6 +161,8 @@ def load_candlestick_data(df, currency_pair):
             f'"{currency_pair}"',
             columns=COLUMNS
         )
+    
+    return df.shape[0]
 
 
 def get_currency_tables_pairs():
