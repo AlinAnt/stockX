@@ -12,7 +12,8 @@ from utilities.auth import (
     user_exists,
     add_case,
     add_currency,
-    add_currencyToСase
+    add_currencyToСase,
+    add_currency
 )
 
 
@@ -58,11 +59,12 @@ except Exception as e:
 #add_currency(name, engine)
 # show that the users exists
 #show_users(engine)
-#case_id = 1
-#currency_id = 1
+#case_id = 4
+#currency_id = 2
 #add_currencyToСase(case_id, currency_id, engine)
 # confirm that user exists
 #print(user_exists(email,engine))
-
+#name='ETH'
+#add_currency(name, engine)
 
 

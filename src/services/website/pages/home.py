@@ -1,9 +1,10 @@
+import sys
 import dash_bootstrap_components as dbc
 import dash_html_components as html
 import dash_core_components as dcc
 import plotly.graph_objs as go
 import pandas as pd
-
+sys.path.append("./../../../../stockx-release")
 from src.modules.db_helpers.helper import get_currency_tables_pairs, get_border_rate
 
 home_login_alert = dbc.Alert(

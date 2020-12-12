@@ -108,7 +108,13 @@ def router(pathname):
                 pathname=f"/currencies/{name}",
                 id='currency_redirect'
             )
-
+    elif pathname == '/admin' or pathname == '/admin':
+        if current_user.is_authenticated:
+            if current_user.role == 'admin':
+                return admin.layout()
+            else:
+                return home.layout()
+                
     # DEFAULT LOGGED IN: /home
     if current_user.is_authenticated:
         return home.layout()

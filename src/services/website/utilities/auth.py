@@ -185,6 +185,21 @@ def add_currencyToСase(case_id, currency_id, engine):
         conn.close()
         return print("Case and case added")
 
+def del_currency(name, engine):
+    table = currency_table()
+
+    delete = table.delete().where(table.c.name == name)
+
+    conn = engine.connect()
+    try:
+        conn.execute(delete)
+    except Exception as e:
+        print(e)
+    else:
+        conn.close()
+        return print('delete_currency')
+
+
 def change_password(email, password, engine):
     if not user_exists(email, engine):
         return False

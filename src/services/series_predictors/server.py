@@ -1,9 +1,9 @@
 import os
 import time
 from datetime import timedelta, datetime
-
+import sys
 import schedule
-
+sys.path.append("~/stockx-release")
 from src.modules.ts_models.runners import FrozenModel
 from src.modules.db_helpers.config import CurrencyTables
 from src.services.series_predictors.utils import generate_future_dates, get_last_model_update

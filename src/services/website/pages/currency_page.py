@@ -186,6 +186,7 @@ def layout(currency_name):
             dbc.Col([
                 html.Div(id='slider-output-container'),
                 html.H4(f"{currency_name}"),
+                dbc.Button("Добавить в избранное", id='add_button', color='danger'),
                 dcc.Graph(
                     id='prediction-plot',
                     figure=create_time_series(
@@ -211,4 +212,11 @@ def layout(currency_name):
         ], className="container row", id='full_div'),
     ])
 
+#@app.callback(
+ #   [Output('slider-output-container', 'children')],
+ #   [Input('add_button', 'n_clicks')])
+
+#def add_like_currency(n_clicks):
+ #   if n_clicks > 0:
+  #      add_currencyToСase(case_id, currency_id, engine)
 
