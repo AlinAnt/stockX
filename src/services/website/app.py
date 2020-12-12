@@ -31,7 +31,7 @@ header = dbc.Navbar(
                 [
                     dbc.NavItem(dbc.NavLink("Home", href="/home")),
                     dbc.NavItem(dbc.NavLink("Random coin", href="/random")),
-                    dbc.NavItem(dbc.NavLink("Your cases", href="/case")),
+                    dbc.NavItem(dbc.NavLink("Case", href="/case")),
                     dbc.NavItem(dbc.NavLink(id='user-name',href='/profile')),
                     dbc.NavItem(dbc.NavLink("Admin", id='admin_id', href='/admin')),
                     dbc.NavItem(dbc.NavLink('Login',id='user-action',href='Login'))
@@ -67,7 +67,7 @@ def router(pathname):
     routes to correct page based on pathname
     '''
     # for debug
-    print('routing to',pathname)
+    #print('routing to',pathname)
     
     # auth pages
     if pathname == '/login':

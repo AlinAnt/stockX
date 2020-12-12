@@ -40,7 +40,7 @@ def generate_metric_row(col1, col2, col3, col4, col5, header=True):
             # html.Td(children=col2),
             html.Td(children=col3),
             html.Td(children=col4),
-            html.Td(dbc.NavLink("Подробнее", href=col5)),
+            html.Td(dbc.NavLink("More details", href=col5)),
         ])
 
 
@@ -74,8 +74,8 @@ def generate_table():
 
 def generate_metric_list_header():
     return generate_metric_row(
-        'Валюта', 'Изменения за день',
-        'Текущий курс($)', 'Курс($) через 40 дней', ''
+        'Currency', 'Changes per day',
+        'Сurrent rate($)', 'Rate($) in 40 days', ''
     )
 
 

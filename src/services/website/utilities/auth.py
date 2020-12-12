@@ -215,6 +215,7 @@ def del_currency(name, engine):
         return print('delete_currency')
 
 
+
 def change_password(email, password, engine):
     if not user_exists(email, engine):
         return False
@@ -243,6 +244,7 @@ def change_user(first, last, email, engine):
         conn.execute(statement)
     # success value
     return True
+
 
 
 class PasswordChange(db.Model):
