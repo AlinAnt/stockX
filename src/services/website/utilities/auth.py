@@ -183,7 +183,22 @@ def add_currencyToСase(case_id, currency_id, engine):
         print(e)
     else: 
         conn.close()
-        return print("Case and case added")
+        return print("Case and currency added")
+
+def currency_exists_in_case(case_id, currency_id, engine):
+    table = case_currency
+
+    statement = table.select().where((table.c.case_id == case_id) and (table.c.currency_id == currency_id))
+    conn = engine.connect()
+    try:
+        resp = conn.execute(statement)
+        ret = next(filter(lambda x: x.case_id == case_id and x.currency_id == currency_id, resp), False)
+    except Exception as e:
+        print(e)
+    else: 
+        conn.close()
+    return bool(ret)
+
 
 def del_currency(name, engine):
     table = currency_table()

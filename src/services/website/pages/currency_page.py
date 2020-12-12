@@ -1,26 +1,36 @@
 import sys
 from datetime import timedelta
 
-from dash.dependencies import Output, Input
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objs as go
-
+from dash.dependencies import Input, Output
 
 sys.path.append("./../../../../stockx-release")
-from src.modules.db_helpers.helper import get_currency_data
+from flask_login import current_user
+from server import User, app
 from src.modules.db_helpers.config import CurrencyTables
+from src.modules.db_helpers.helper import get_currency_data
+
+
+from utilities.auth import add_currencyToСase, Currency, currency_table, currency_exists_in_case
+from utilities.config import engine
+from dash import no_update
 
 login_alert = dbc.Alert(
     'User not logged in. Taking you to login.',
     color='danger'
 )
+currency_alert = dbc.Alert(
+    'Currency added in your case',
+    color='success'
+)
 
 
 def get_history_data(currency_name):
     for table in CurrencyTables:
-        print(currency_name)
+        #print(currency_name)
         if table.name == currency_name:
             currency = table
             break
@@ -180,13 +190,14 @@ def layout(currency_name):
     # if current_user.is_authenticated:
     hist_data = get_history_data(currency_name)
     future_data = get_future_data(currency_name)
-
+    currencyN = currency_name
     return html.Div([
         dbc.Row(
             dbc.Col([
                 html.Div(id='slider-output-container'),
+                html.Div(id='currency-div', className=currency_name),
                 html.H4(f"{currency_name}"),
-                dbc.Button("Добавить в избранное", id='add_button', color='danger'),
+                dbc.Button("Add to case", id='add_button', color='success'),
                 dcc.Graph(
                     id='prediction-plot',
                     figure=create_time_series(
@@ -212,11 +223,40 @@ def layout(currency_name):
         ], className="container row", id='full_div'),
     ])
 
-#@app.callback(
- #   [Output('slider-output-container', 'children')],
- #   [Input('add_button', 'n_clicks')])
+@app.callback(
+    [Output('slider-output-container','children')],
+    [Input('add_button', 'n_clicks'), 
+    Input('currency-div','className')])
 
-#def add_like_currency(n_clicks):
- #   if n_clicks > 0:
-  #      add_currencyToСase(case_id, currency_id, engine)
+def add_like_currency(n_clicks, className):
+    #currency_name = 'ETH'
+    currency_name = className
+    #print(type(currency_name))
+    if n_clicks > 0:
+        #print('я тут')
+        case_id = current_user.case.id
+        currency_id = show_id_currency(currency_name, engine)
+        #print(currency_id)
+        if currency_exists_in_case(case_id, currency_id, engine) == True:
+            pass
+        else:
+            add_currencyToСase(case_id, currency_id, engine)
+    return no_update
 
+
+def show_id_currency(currency_name, engine):
+    table = currency_table()
+    statement = table.select().where(table.c.name == currency_name)
+    
+    conn = engine.connect()
+    try:
+        rs = conn.execute(statement)
+    except Exception as e:
+        print(e)
+    else: 
+        for row in rs:
+            for col, val in row.items():
+                our_id = val
+                #print(our_id)
+                return our_id
+    
