@@ -67,7 +67,7 @@ def _get_binace_data(currency_pair, start_time=0, interval='1m', limit=1000):
     if batches:
         return pd.concat(batches, ignore_index=True)
     else:
-        return None
+        return pd.DataFrame(columns=CANDLESTICK_COLUMNS)
 
 
 def _preprocess(df):
@@ -79,7 +79,7 @@ def _preprocess(df):
 def update_candlestick_data(currency_pair):
     last_timestamp = get_last_timestamp(currency_pair) * 1000
 
-    load_candlestick_data(
+    data_length = load_candlestick_data(
         _preprocess(
             _get_binace_data(
                 currency_pair,
@@ -88,3 +88,5 @@ def update_candlestick_data(currency_pair):
         ),
         currency_pair
     )
+
+    return last_timestamp, data_length
